@@ -222,6 +222,15 @@ async def async_setup_entry(
         min_temp,
         max_temp,
     )
+    async_add_entities([entity])
+
+
+class GoveeLanLight(LightEntity):
+    _attr_has_entity_name = False
+    _attr_min_color_temp_kelvin = MIN_COLOR_TEMP_KELVIN
+    _attr_max_color_temp_kelvin = MAX_COLOR_TEMP_KELVIN
+    _attr_supported_color_modes = {
+        ColorMode.COLOR_TEMP,
         ColorMode.RGB,
     }
 
