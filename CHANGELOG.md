@@ -1,9 +1,15 @@
 # Changelog
 
+## 2.3.0 - 2026-07-20
+
+- Bumped the manifest version to 2.3.0 as a clean minor release for the accumulated non-breaking feature, packaging, and documentation changes.
+- Added local Home Assistant brand assets under `custom_components/govee_lan/brand/` so recent Home Assistant versions can serve the integration icon through the brand API.
+- Kept the README release status aligned with the shipped package contents.
+
 ## 2.2.7 - 2026-07-20
 
 - Bumped the manifest version to 2.2.7 for the latest HACS/Home Assistant release.
-- Added/confirmed icon assets for the integration package and repository root so the integration can surface its icon correctly once installed and reloaded.
+- Added local Home Assistant brand assets under `custom_components/govee_lan/brand/` so recent Home Assistant versions can serve the integration icon through the brand API.
 - Updated packaging notes and release documentation to reflect the current status of the integration.
 
 ## 2.2.5 - 2026-07-20

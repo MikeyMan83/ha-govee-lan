@@ -14,7 +14,7 @@ This is a fork of [Brian Miller's govee-lan-direct](https://gitlab.phospher.com/
 - A confirmed, empirically-tested color temperature range rather than the
   device's advertised (but not necessarily accurate) spec range
 - HACS Support
-- A packaging cleanup for Home Assistant/HACS so the integration icon is included in the current release build
+- Local brand assets for Home Assistant's custom-integration icon API
 
 ## Features
 
@@ -36,9 +36,11 @@ This is a fork of [Brian Miller's govee-lan-direct](https://gitlab.phospher.com/
 
 ## Current release status
 
-- Current release: 2.2.7
-- Includes updated icon assets in the integration package and repository root so Home Assistant/HACS should surface the integration icon correctly after installation and a reload/restart.
+- Current release: 2.3.0
+- Includes local brand images in `custom_components/govee_lan/brand/` so Home Assistant 2026.3+ can serve the integration icon directly from the installed custom component.
 - Includes the scene-catalog, UDP reliability, and color-temperature range improvements described below.
+
+If the integration still shows "icon not available" after upgrading, restart Home Assistant and hard-refresh the browser once so the frontend drops any cached placeholder image.
 
 ## Installation
 
