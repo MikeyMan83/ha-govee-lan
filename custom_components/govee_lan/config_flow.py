@@ -6,6 +6,7 @@ import json
 import logging
 import socket
 import struct
+import urllib.error
 from typing import Any
 
 import voluptuous as vol
@@ -21,12 +22,14 @@ from .const import (
     CONF_DEVICE_ID,
     CONF_MIN_COLOR_TEMP_KELVIN,
     CONF_MAX_COLOR_TEMP_KELVIN,
+    CONF_SKU,
     GOVEE_SCAN_PORT,
     GOVEE_SCAN_RESP_PORT,
     GOVEE_MULTICAST_ADDR,
     MIN_COLOR_TEMP_KELVIN,
     MAX_COLOR_TEMP_KELVIN,
 )
+from .scenes import fetch_scene_catalog, save_scene_catalog
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -140,6 +143,30 @@ class GoveeLanOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional(CONF_MIN_COLOR_TEMP_KELVIN, default=current_min): int,
                 vol.Optional(CONF_MAX_COLOR_TEMP_KELVIN, default=current_max): int,
             }),
+        )
+
+    async def async_step_scene_catalog(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            sku = user_input[CONF_SKU]
+            try:
+                scenes = fetch_scene_catalog(sku)
+                save_scene_catalog(sku, scenes)
+            except (OSError, urllib.error.URLError, ValueError, json.JSONDecodeError) as err:
+                _LOGGER.exception("Failed to fetch scene catalog for SKU %s", sku)
+                errors["base"] = "fetch_failed"
+            else:
+                await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+                return self.async_create_entry(title="", data={})
+
+        return self.async_show_form(
+            step_id="scene_catalog",
+            data_schema=vol.Schema({
+                vol.Required(CONF_SKU): str,
+            }),
+            errors=errors,
         )
 
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import urllib.request
 from pathlib import Path
 
 _LOGGER = logging.getLogger(__name__)
@@ -59,6 +60,40 @@ def encode_scene(scene_code: int, scence_param_b64: str) -> list[str]:
         base64.b64encode(bytes(padded[i : i + 20])).decode("ascii")
         for i in range(0, len(padded), 20)
     ]
+
+
+def fetch_scene_catalog(sku: str) -> list[dict]:
+    """Fetch a scene catalog from Govee's cloud endpoint for a given SKU."""
+    req = urllib.request.Request(
+        f"https://app2.govee.com/appsku/v1/light-effect-libraries?sku={sku}",
+        headers={"AppVersion": "6.6.30"},
+    )
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        data = json.load(resp)
+
+    scenes: list[dict] = []
+    for category in data.get("data", {}).get("categories", []):
+        for scene in category.get("scenes", []):
+            effects = scene.get("lightEffects") or []
+            if not effects:
+                continue
+            effect = effects[0]
+            scenes.append({
+                "name": scene.get("sceneName"),
+                "code": effect.get("sceneCode"),
+                "param": effect.get("scenceParam"),
+                "category": category.get("categoryName"),
+            })
+    return scenes
+
+
+def save_scene_catalog(sku: str, scenes: list[dict]) -> Path:
+    """Persist a fetched scene catalog to the integration's scene_data folder."""
+    catalog_dir = Path(__file__).parent / "scene_data"
+    catalog_dir.mkdir(parents=True, exist_ok=True)
+    target = catalog_dir / f"{sku}.json"
+    target.write_text(json.dumps(scenes, indent=2), encoding="utf-8")
+    return target
 
 
 def load_scene_catalog() -> dict[str, list[dict]]:

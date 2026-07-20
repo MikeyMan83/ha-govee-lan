@@ -10,7 +10,8 @@
       }
     },
     "error": {
-      "cannot_connect": "Cannot connect to device. Verify the IP is correct and LAN Control is enabled."
+      "cannot_connect": "Cannot connect to device. Verify the IP is correct and LAN Control is enabled.",
+      "fetch_failed": "Unable to fetch scene catalog for that SKU. Verify the SKU and your internet connection."
     },
     "abort": {
       "already_configured": "This device is already configured.",
@@ -26,6 +27,13 @@
           "name": "Device Name",
           "min_color_temp_kelvin": "Minimum Color Temperature (K)",
           "max_color_temp_kelvin": "Maximum Color Temperature (K)"
+        }
+      },
+      "scene_catalog": {
+        "title": "Fetch Scene Catalog",
+        "description": "Enter the SKU for this device (for example H702B) to download and save scene data for this integration.",
+        "data": {
+          "sku": "Device SKU"
         }
       }
     }
