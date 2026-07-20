@@ -13,6 +13,7 @@ This is a fork of [Brian Miller's govee-lan-direct](https://gitlab.phospher.com/
   [Network requirements](#network-requirements) below)
 - A confirmed, empirically-tested color temperature range rather than the
   device's advertised (but not necessarily accurate) spec range
+- HACS Support
 
 ## Features
 
