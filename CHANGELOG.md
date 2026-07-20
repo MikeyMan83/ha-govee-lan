@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.3.5 - 2026-07-20
+
+- Moved scene-catalog fetch/save work off the Home Assistant event loop to avoid blocking-call errors.
+- Kept the configure and reconfigure forms unchanged while fixing the runtime fetch path.
+
+## 2.3.4 - 2026-07-20
+
+- Fixed dialog routing so both Configure and Reconfigure show the same labeled device settings form.
+- Added a dedicated reconfigure flow step with SKU validation and optional scene-catalog fetch.
+- Added translation strings for the reconfigure form and success message.
+
 ## 2.3.3 - 2026-07-20
 
 - Rolled up 2.3.0-2.3.3 same-day maintenance updates into one release note for readability.

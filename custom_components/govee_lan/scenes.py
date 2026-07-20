@@ -87,6 +87,12 @@ def fetch_scene_catalog(sku: str) -> list[dict]:
     return scenes
 
 
+def fetch_and_save_scene_catalog(sku: str) -> Path:
+    """Fetch a scene catalog and persist it to disk."""
+    scenes = fetch_scene_catalog(sku)
+    return save_scene_catalog(sku, scenes)
+
+
 def save_scene_catalog(sku: str, scenes: list[dict]) -> Path:
     """Persist a fetched scene catalog to the integration's scene_data folder."""
     catalog_dir = Path(__file__).parent / "scene_data"

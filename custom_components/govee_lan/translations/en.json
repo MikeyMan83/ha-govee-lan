@@ -7,6 +7,18 @@
         "data": {
           "ip": "Device IP Address"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Govee Device",
+        "description": "Update device settings. To refresh scenes, provide or confirm the SKU and enable scene-catalog fetch for this save.",
+        "data": {
+          "ip": "Device IP Address",
+          "name": "Device Name",
+          "min_color_temp_kelvin": "Minimum Color Temperature (K)",
+          "max_color_temp_kelvin": "Maximum Color Temperature (K)",
+          "sku": "Device SKU",
+          "fetch_scene_catalog_now": "Fetch scene catalog now"
+        }
       }
     },
     "error": {
@@ -16,7 +28,8 @@
     },
     "abort": {
       "already_configured": "This device is already configured.",
-      "no_devices_found": "No Govee devices found on the network."
+      "no_devices_found": "No Govee devices found on the network.",
+      "reconfigure_successful": "Device configuration updated."
     }
   },
   "options": {

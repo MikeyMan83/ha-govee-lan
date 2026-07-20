@@ -29,7 +29,7 @@ from .const import (
     MIN_COLOR_TEMP_KELVIN,
     MAX_COLOR_TEMP_KELVIN,
 )
-from .scenes import fetch_scene_catalog, save_scene_catalog
+from .scenes import fetch_and_save_scene_catalog
 
 _LOGGER = logging.getLogger(__name__)
 CONF_FETCH_SCENE_CATALOG_NOW = "fetch_scene_catalog_now"
@@ -151,8 +151,10 @@ class GoveeLanOptionsFlow(config_entries.OptionsFlow):
                     errors["base"] = "sku_required"
                 else:
                     try:
-                        scenes = fetch_scene_catalog(current_sku)
-                        save_scene_catalog(current_sku, scenes)
+                        await self.hass.async_add_executor_job(
+                            fetch_and_save_scene_catalog,
+                            current_sku,
+                        )
                     except (OSError, urllib.error.URLError, ValueError, json.JSONDecodeError):
                         _LOGGER.exception("Failed to fetch scene catalog for SKU %s", current_sku)
                         errors["base"] = "fetch_failed"
@@ -258,3 +260,68 @@ class GoveeLanConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         return self.async_abort(reason="no_devices_found")
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Reconfigure an existing config entry with the same fields as options."""
+        entry = self._get_reconfigure_entry()
+        current_ip = entry.data.get(CONF_DEVICE_IP, "")
+        current_name = entry.data.get(CONF_DEVICE_NAME, entry.title)
+        current_min = entry.data.get(CONF_MIN_COLOR_TEMP_KELVIN, MIN_COLOR_TEMP_KELVIN)
+        current_max = entry.data.get(CONF_MAX_COLOR_TEMP_KELVIN, MAX_COLOR_TEMP_KELVIN)
+        current_sku = entry.data.get(CONF_SKU, entry.data.get(CONF_DEVICE_MODEL, ""))
+        current_fetch = False
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            current_ip = user_input[CONF_DEVICE_IP]
+            current_name = user_input.get(CONF_DEVICE_NAME, current_name)
+            current_min = user_input[CONF_MIN_COLOR_TEMP_KELVIN]
+            current_max = user_input[CONF_MAX_COLOR_TEMP_KELVIN]
+            current_sku = user_input.get(CONF_SKU, current_sku).strip()
+            current_fetch = bool(user_input.get(CONF_FETCH_SCENE_CATALOG_NOW, False))
+
+            new_data = dict(entry.data)
+            new_data[CONF_DEVICE_IP] = current_ip
+            if current_name:
+                new_data[CONF_DEVICE_NAME] = current_name
+            new_data[CONF_MIN_COLOR_TEMP_KELVIN] = current_min
+            new_data[CONF_MAX_COLOR_TEMP_KELVIN] = current_max
+            if current_sku:
+                new_data[CONF_SKU] = current_sku
+
+            if current_fetch:
+                if not current_sku:
+                    errors["base"] = "sku_required"
+                else:
+                    try:
+                        await self.hass.async_add_executor_job(
+                            fetch_and_save_scene_catalog,
+                            current_sku,
+                        )
+                    except (OSError, urllib.error.URLError, ValueError, json.JSONDecodeError):
+                        _LOGGER.exception("Failed to fetch scene catalog for SKU %s", current_sku)
+                        errors["base"] = "fetch_failed"
+
+            if not errors:
+                self.hass.config_entries.async_update_entry(
+                    entry,
+                    data=new_data,
+                    title=new_data.get(CONF_DEVICE_NAME, entry.title),
+                )
+                await self.hass.config_entries.async_reload(entry.entry_id)
+                return self.async_abort(reason="reconfigure_successful")
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema({
+                vol.Required(CONF_DEVICE_IP, default=current_ip): str,
+                vol.Optional(CONF_DEVICE_NAME, default=current_name): str,
+                vol.Optional(CONF_MIN_COLOR_TEMP_KELVIN, default=current_min): int,
+                vol.Optional(CONF_MAX_COLOR_TEMP_KELVIN, default=current_max): int,
+                vol.Optional(CONF_SKU, default=current_sku): str,
+                vol.Optional(CONF_FETCH_SCENE_CATALOG_NOW, default=current_fetch): bool,
+            }),
+            errors=errors,
+        )
