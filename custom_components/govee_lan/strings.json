@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add Govee Device",
+        "description": "Enter the IP address of your Govee device. The device must have LAN Control enabled in the Govee Home app.",
+        "data": {
+          "ip": "Device IP Address"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to device. Verify the IP is correct and LAN Control is enabled."
+    },
+    "abort": {
+      "already_configured": "This device is already configured.",
+      "no_devices_found": "No Govee devices found on the network."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure Govee Device",
+        "data": {
+          "ip": "Device IP Address",
+          "name": "Device Name"
+        }
+      }
+    }
+  }
+}
