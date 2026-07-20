@@ -39,7 +39,7 @@ This is a fork of [Brian Miller's govee-lan-direct](https://gitlab.phospher.com/
 - Current release: 2.3.2
 - Includes local brand images in `custom_components/govee_lan/brand/` so Home Assistant 2026.3+ can serve the integration icon directly from the installed custom component.
 - Includes the scene-catalog, UDP reliability, and color-temperature range improvements described below.
-- The scene-catalog fetch action is available from the integration options UI and prepopulates the known device SKU/model.
+- Scene-catalog fetch is available directly in the integration options form with SKU prefill and a `Fetch scene catalog now` toggle.
 
 If the integration still shows "icon not available" after upgrading, restart Home Assistant and hard-refresh the browser once so the frontend drops any cached placeholder image.
 
@@ -95,7 +95,7 @@ Scene catalogs aren't bundled for every SKU -- Govee's scene data lives on
 their servers, keyed by SKU, and there's no single catalog covering every
 device. To add scenes for your model:
 
-- From Home Assistant: open `Settings -> Devices & Services -> Govee LAN Direct -> Configure`, choose `Fetch scene catalog`, and submit the prefilled SKU.
+- From Home Assistant: open `Settings -> Devices & Services -> Govee LAN Direct -> Configure`, confirm the prefilled SKU, enable `Fetch scene catalog now`, and save.
 - Or from a local checkout, fetch it yourself with the helper script below.
 
 ```powershell

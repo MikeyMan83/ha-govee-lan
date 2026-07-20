@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.3 - 2026-07-20
+
+- Replaced the options menu flow with a single `Configure Govee Device` form to fix blank menu rows in some Home Assistant UIs.
+- Added `Fetch scene catalog now` directly to the configure form with SKU prefill and validation.
+- Kept backward-compatible route handlers for older options-flow step links.
+
 ## 2.3.2 - 2026-07-20
 
 - Finalized and unified icon assets across integration package and brand files.
