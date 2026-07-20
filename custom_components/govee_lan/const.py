@@ -4,6 +4,8 @@ CONF_DEVICE_IP = "ip"
 CONF_DEVICE_MODEL = "model"
 CONF_DEVICE_NAME = "name"
 CONF_DEVICE_ID = "device_id"
+CONF_MIN_COLOR_TEMP_KELVIN = "min_color_temp_kelvin"
+CONF_MAX_COLOR_TEMP_KELVIN = "max_color_temp_kelvin"
 
 GOVEE_CMD_PORT = 4003
 GOVEE_SCAN_PORT = 4001

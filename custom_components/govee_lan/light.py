@@ -27,6 +27,8 @@ from .const import (
     CONF_DEVICE_ID,
     CONF_DEVICE_MODEL,
     CONF_DEVICE_NAME,
+    CONF_MIN_COLOR_TEMP_KELVIN,
+    CONF_MAX_COLOR_TEMP_KELVIN,
     GOVEE_CMD_PORT,
     GOVEE_SCAN_RESP_PORT,
     DEFAULT_POLL_INTERVAL,
@@ -204,19 +206,22 @@ async def async_setup_entry(
     device_id = entry.data[CONF_DEVICE_ID]
     model = entry.data[CONF_DEVICE_MODEL]
     name = entry.data.get(CONF_DEVICE_NAME, f"Govee {model}")
+    min_temp = entry.data.get(CONF_MIN_COLOR_TEMP_KELVIN, MIN_COLOR_TEMP_KELVIN)
+    max_temp = entry.data.get(CONF_MAX_COLOR_TEMP_KELVIN, MAX_COLOR_TEMP_KELVIN)
 
     protocol = await _get_protocol(hass)
     scenes = await _get_scenes_for_model(hass, model)
-    entity = GoveeLanLight(protocol, ip, device_id, model, name, entry.entry_id, scenes)
-    async_add_entities([entity])
-
-
-class GoveeLanLight(LightEntity):
-    _attr_has_entity_name = False
-    _attr_min_color_temp_kelvin = MIN_COLOR_TEMP_KELVIN
-    _attr_max_color_temp_kelvin = MAX_COLOR_TEMP_KELVIN
-    _attr_supported_color_modes = {
-        ColorMode.COLOR_TEMP,
+    entity = GoveeLanLight(
+        protocol,
+        ip,
+        device_id,
+        model,
+        name,
+        entry.entry_id,
+        scenes,
+        min_temp,
+        max_temp,
+    )
         ColorMode.RGB,
     }
 
@@ -229,6 +234,8 @@ class GoveeLanLight(LightEntity):
         name: str,
         entry_id: str,
         scenes: list[dict],
+        min_color_temp_kelvin: int = MIN_COLOR_TEMP_KELVIN,
+        max_color_temp_kelvin: int = MAX_COLOR_TEMP_KELVIN,
     ) -> None:
         self._protocol = protocol
         self._ip = ip
@@ -238,6 +245,8 @@ class GoveeLanLight(LightEntity):
         self._last_poll: float = 0
         self._last_command: float = 0
         self._consecutive_timeouts = 0
+        self._min_color_temp_kelvin = min_color_temp_kelvin
+        self._max_color_temp_kelvin = max_color_temp_kelvin
 
         self._scenes = {s["name"]: s for s in scenes}
 
@@ -251,6 +260,8 @@ class GoveeLanLight(LightEntity):
         self._attr_color_mode = ColorMode.RGB
         self._attr_available = True
         self._attr_effect = None
+        self._attr_min_color_temp_kelvin = min_color_temp_kelvin
+        self._attr_max_color_temp_kelvin = max_color_temp_kelvin
 
         if scenes:
             self._attr_supported_features = LightEntityFeature.EFFECT
@@ -292,8 +303,8 @@ class GoveeLanLight(LightEntity):
 
         if ATTR_COLOR_TEMP_KELVIN in kwargs:
             kelvin = max(
-                min(kwargs[ATTR_COLOR_TEMP_KELVIN], MAX_COLOR_TEMP_KELVIN),
-                MIN_COLOR_TEMP_KELVIN,
+                min(kwargs[ATTR_COLOR_TEMP_KELVIN], self._max_color_temp_kelvin),
+                self._min_color_temp_kelvin,
             )
             self._protocol.send_command(
                 self._ip, "colorwc",

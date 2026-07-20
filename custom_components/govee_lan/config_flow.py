@@ -19,9 +19,13 @@ from .const import (
     CONF_DEVICE_MODEL,
     CONF_DEVICE_NAME,
     CONF_DEVICE_ID,
+    CONF_MIN_COLOR_TEMP_KELVIN,
+    CONF_MAX_COLOR_TEMP_KELVIN,
     GOVEE_SCAN_PORT,
     GOVEE_SCAN_RESP_PORT,
     GOVEE_MULTICAST_ADDR,
+    MIN_COLOR_TEMP_KELVIN,
+    MAX_COLOR_TEMP_KELVIN,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -115,6 +119,8 @@ class GoveeLanOptionsFlow(config_entries.OptionsFlow):
             new_data[CONF_DEVICE_IP] = user_input[CONF_DEVICE_IP]
             if user_input.get(CONF_DEVICE_NAME):
                 new_data[CONF_DEVICE_NAME] = user_input[CONF_DEVICE_NAME]
+            new_data[CONF_MIN_COLOR_TEMP_KELVIN] = user_input[CONF_MIN_COLOR_TEMP_KELVIN]
+            new_data[CONF_MAX_COLOR_TEMP_KELVIN] = user_input[CONF_MAX_COLOR_TEMP_KELVIN]
             self.hass.config_entries.async_update_entry(
                 self.config_entry, data=new_data, title=new_data.get(CONF_DEVICE_NAME, self.config_entry.title),
             )
@@ -123,12 +129,16 @@ class GoveeLanOptionsFlow(config_entries.OptionsFlow):
 
         current_ip = self.config_entry.data.get(CONF_DEVICE_IP, "")
         current_name = self.config_entry.data.get(CONF_DEVICE_NAME, self.config_entry.title)
+        current_min = self.config_entry.data.get(CONF_MIN_COLOR_TEMP_KELVIN, MIN_COLOR_TEMP_KELVIN)
+        current_max = self.config_entry.data.get(CONF_MAX_COLOR_TEMP_KELVIN, MAX_COLOR_TEMP_KELVIN)
 
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema({
                 vol.Required(CONF_DEVICE_IP, default=current_ip): str,
                 vol.Optional(CONF_DEVICE_NAME, default=current_name): str,
+                vol.Optional(CONF_MIN_COLOR_TEMP_KELVIN, default=current_min): int,
+                vol.Optional(CONF_MAX_COLOR_TEMP_KELVIN, default=current_max): int,
             }),
         )
 

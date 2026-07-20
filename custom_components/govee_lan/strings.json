@@ -23,7 +23,9 @@
         "title": "Configure Govee Device",
         "data": {
           "ip": "Device IP Address",
-          "name": "Device Name"
+          "name": "Device Name",
+          "min_color_temp_kelvin": "Minimum Color Temperature (K)",
+          "max_color_temp_kelvin": "Maximum Color Temperature (K)"
         }
       }
     }
