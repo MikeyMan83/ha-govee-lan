@@ -35,16 +35,18 @@ This is a fork of [Brian Miller's govee-lan-direct](https://gitlab.phospher.com/
 
 ## Installation
 
-### Manual
-
-Copy `custom_components/govee_lan/` into your Home Assistant `config/custom_components/`
-directory, then restart Home Assistant.
-
-### HACS (custom repository)
+### HACS (recommended)
 
 1. HACS -> Integrations -> top-right menu -> Custom repositories
 2. Add this repo's URL, category "Integration"
-3. Install "Govee LAN Direct", restart Home Assistant
+3. Install "Govee LAN Direct", then restart Home Assistant
+
+### Manual / local checkout
+
+If you are testing from a local checkout, or installing the integration without HACS,
+copy the entire `custom_components/govee_lan/` directory (not just one file)
+into your Home Assistant `config/custom_components/` directory on the Home
+Assistant host, then restart Home Assistant.
 
 ## Adding a device
 
