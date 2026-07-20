@@ -44,15 +44,19 @@ catch {
 
 $scenes = foreach ($cat in $response.data.categories) {
     foreach ($s in $cat.scenes) {
-        $effect = $s.lightEffects[0]
+        $effect = $s.lightEffects | Select-Object -First 1
+        if (-not $effect) {
+            continue
+        }
         [PSCustomObject]@{
-            name     = $s.sceneName
-            code     = $effect.sceneCode
-            param    = $effect.scenceParam   # not a typo -- matches Govee's own (misspelled) field name
-            category = $cat.categoryName
+            name     = [string]$s.sceneName
+            code     = [int]$effect.sceneCode
+            param    = [string]$effect.scenceParam   # not a typo -- matches Govee's own (misspelled) field name
+            category = [string]$cat.categoryName
         }
     }
 }
+$scenes = @($scenes)
 
 if (-not $scenes -or $scenes.Count -eq 0) {
     Write-Warning "No scenes returned for SKU '$Sku'. Either the SKU is wrong, or Govee doesn't have a catalog for it under this endpoint -- try bumping -AppVersion, or fall back to sniffing the Govee app's own traffic."
@@ -64,20 +68,31 @@ if (-not $scenes -or $scenes.Count -eq 0) {
 # scenes.py can't do anything useful with an empty param, so drop them here
 # rather than shipping broken entries.
 $before = $scenes.Count
-$clean = $scenes | Where-Object { $_.param -ne "" }
+$clean = @($scenes | Where-Object { -not [string]::IsNullOrEmpty($_.param) })
 $dropped = $before - $clean.Count
 
 # IMPORTANT: -InputObject @($clean) forces a JSON array even if only one
 # scene comes back. Piping into ConvertTo-Json instead
 # ($clean | ConvertTo-Json) unrolls a single-item array into a bare object,
 # which scenes.py's loader does not expect.
-ConvertTo-Json -InputObject @($clean) -Depth 5 |
-    Set-Content -Path $OutFile -Encoding utf8NoBOM   # utf8 (not utf8NoBOM) on Windows PowerShell 5.1 silently prepends a BOM that breaks scenes.py's json.loads()
+$resolvedOutFile = if ([System.IO.Path]::IsPathRooted($OutFile)) {
+    $OutFile
+}
+else {
+    Join-Path (Get-Location) $OutFile
+}
+$parentDir = Split-Path -Parent $resolvedOutFile
+if ($parentDir) {
+    New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
+}
+$json = ConvertTo-Json -InputObject @($clean) -Depth 5
+$utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+[System.IO.File]::WriteAllText($resolvedOutFile, $json, $utf8NoBom)
 
-$dupes = $clean | Group-Object name | Where-Object { $_.Count -gt 1 } | Select-Object -ExpandProperty Name
+$dupes = @($clean | Group-Object name | Where-Object { $_.Count -gt 1 } | Select-Object -ExpandProperty Name)
 
-Write-Host "$($clean.Count) scenes written to $OutFile (dropped $dropped with no param)"
+Write-Host "$($clean.Count) scenes written to $resolvedOutFile (dropped $dropped with no param)"
 if ($dupes) {
     Write-Warning "Duplicate scene names found: $($dupes -join ', ') -- govee_lan keys effects by name, so only the last of each duplicate will be selectable in Home Assistant. Rename one of each pair in the JSON if you want both."
 }
-Write-Host "Copy $OutFile into custom_components/govee_lan/scene_data/ and reload the integration."
+Write-Host "Copy $resolvedOutFile into custom_components/govee_lan/scene_data/ and reload the integration."
