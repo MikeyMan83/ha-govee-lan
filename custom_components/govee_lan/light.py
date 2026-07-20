@@ -65,7 +65,7 @@ class GoveeProtocol(asyncio.DatagramProtocol):
     def __init__(self, hass: core.HomeAssistant) -> None:
         self._hass = hass
         self._transport: asyncio.DatagramTransport | None = None
-        self._pending: dict[str, asyncio.Future] = {}
+        self._pending: dict[str, list[asyncio.Future]] = {}
         self._closing = False
 
     # -- lifecycle ---------------------------------------------------------
@@ -110,12 +110,25 @@ class GoveeProtocol(asyncio.DatagramProtocol):
     def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
         # Match by source IP only: replies arrive from a random high port.
         ip = addr[0]
-        future = self._pending.get(ip)
-        if future and not future.done():
-            try:
-                future.set_result(json.loads(data.decode()))
-            except (json.JSONDecodeError, asyncio.InvalidStateError):
-                pass
+        pending = self._pending.get(ip)
+        if not pending:
+            return
+
+        future = pending[0]
+        if future.done():
+            pending.pop(0)
+            if not pending:
+                self._pending.pop(ip, None)
+            return
+
+        try:
+            future.set_result(json.loads(data.decode()))
+        except (json.JSONDecodeError, asyncio.InvalidStateError):
+            pass
+        else:
+            pending.pop(0)
+            if not pending:
+                self._pending.pop(ip, None)
 
     def error_received(self, exc: Exception) -> None:
         _LOGGER.debug("UDP error: %s", exc)
@@ -150,14 +163,19 @@ class GoveeProtocol(asyncio.DatagramProtocol):
         loop = asyncio.get_running_loop()
         for _ in range(attempts):
             future: asyncio.Future[dict] = loop.create_future()
-            self._pending[ip] = future
+            self._pending.setdefault(ip, []).append(future)
             try:
                 self.send_command(ip, cmd, data)
                 return await asyncio.wait_for(future, timeout=try_timeout)
             except asyncio.TimeoutError:
                 continue
             finally:
-                self._pending.pop(ip, None)
+                pending = self._pending.get(ip)
+                if pending is not None:
+                    if future in pending:
+                        pending.remove(future)
+                    if not pending:
+                        self._pending.pop(ip, None)
         return None
 
 
@@ -251,8 +269,8 @@ class GoveeLanLight(LightEntity):
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        if ATTR_EFFECT in kwargs:
-            effect_name = kwargs[ATTR_EFFECT]
+        effect_name = kwargs.get(ATTR_EFFECT)
+        if effect_name is not None:
             scene = self._scenes.get(effect_name)
             if scene:
                 packets = encode_scene(scene["code"], scene["param"])
@@ -261,10 +279,6 @@ class GoveeLanLight(LightEntity):
                     {"msg": {"cmd": "ptReal", "data": {"command": packets}}},
                 )
                 self._attr_effect = effect_name
-                self._attr_is_on = True
-                self._last_command = time.monotonic()
-                self.async_write_ha_state()
-                return
 
         if ATTR_RGB_COLOR in kwargs:
             r, g, b = kwargs[ATTR_RGB_COLOR]
