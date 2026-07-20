@@ -43,6 +43,13 @@ This is a fork of [Brian Miller's govee-lan-direct](https://gitlab.phospher.com/
 
 If the integration still shows "icon not available" after upgrading, restart Home Assistant and hard-refresh the browser once so the frontend drops any cached placeholder image.
 
+## Testing
+
+The repository includes automated regression tests for the scene catalog flow, storage, and UDP protocol handling.
+
+- Run locally with `python -m pytest`
+- The GitHub Actions workflow runs the same suite on push and pull request
+
 ## Installation
 
 ### HACS (recommended)
