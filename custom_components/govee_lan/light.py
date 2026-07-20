@@ -41,14 +41,10 @@ from .scenes import encode_scene, load_scene_catalog
 
 _LOGGER = logging.getLogger(__name__)
 
-_SCENE_CATALOG: dict[str, list[dict]] | None = None
-
 
 async def _get_scenes_for_model(hass: core.HomeAssistant, model: str) -> list[dict]:
-    global _SCENE_CATALOG
-    if _SCENE_CATALOG is None:
-        _SCENE_CATALOG = await hass.async_add_executor_job(load_scene_catalog)
-    return _SCENE_CATALOG.get(model, [])
+    catalog = await hass.async_add_executor_job(load_scene_catalog)
+    return catalog.get(model, [])
 
 
 class GoveeProtocol(asyncio.DatagramProtocol):

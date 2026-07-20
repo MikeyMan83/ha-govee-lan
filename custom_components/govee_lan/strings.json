@@ -21,6 +21,13 @@
   "options": {
     "step": {
       "init": {
+        "title": "Govee Options",
+        "menu_options": {
+          "configure": "Device settings",
+          "scene_catalog": "Fetch scene catalog"
+        }
+      },
+      "configure": {
         "title": "Configure Govee Device",
         "data": {
           "ip": "Device IP Address",

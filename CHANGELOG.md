@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.3.2 - 2026-07-20
+
+- Finalized and unified icon assets across integration package and brand files.
+- Kept scene-catalog options-flow behavior from 2.3.1 (reachable fetch action, SKU prefill, config-entry reload pickup).
+- Documentation and release metadata aligned to the shipped icon and scene-fetch flow.
+
+## 2.3.1 - 2026-07-20
+
+- Fixed the options flow so `Fetch scene catalog` is actually reachable from the Home Assistant UI.
+- Prefilled the scene fetch SKU from the known device model and persisted the chosen SKU on the config entry.
+- Fixed scene catalog reload behavior so fetched catalogs are picked up on config entry reload instead of waiting for a full Home Assistant restart.
+
 ## 2.3.0 - 2026-07-20
 
 - Bumped the manifest version to 2.3.0 as a clean minor release for the accumulated non-breaking feature, packaging, and documentation changes.

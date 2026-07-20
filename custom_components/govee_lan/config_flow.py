@@ -117,6 +117,14 @@ class GoveeLanOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
+        return self.async_show_menu(
+            step_id="init",
+            menu_options=["configure", "scene_catalog"],
+        )
+
+    async def async_step_configure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         if user_input is not None:
             new_data = dict(self.config_entry.data)
             new_data[CONF_DEVICE_IP] = user_input[CONF_DEVICE_IP]
@@ -136,7 +144,7 @@ class GoveeLanOptionsFlow(config_entries.OptionsFlow):
         current_max = self.config_entry.data.get(CONF_MAX_COLOR_TEMP_KELVIN, MAX_COLOR_TEMP_KELVIN)
 
         return self.async_show_form(
-            step_id="init",
+            step_id="configure",
             data_schema=vol.Schema({
                 vol.Required(CONF_DEVICE_IP, default=current_ip): str,
                 vol.Optional(CONF_DEVICE_NAME, default=current_name): str,
@@ -149,6 +157,10 @@ class GoveeLanOptionsFlow(config_entries.OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         errors: dict[str, str] = {}
+        current_sku = self.config_entry.data.get(
+            CONF_SKU,
+            self.config_entry.data.get(CONF_DEVICE_MODEL, ""),
+        )
         if user_input is not None:
             sku = user_input[CONF_SKU]
             try:
@@ -158,13 +170,19 @@ class GoveeLanOptionsFlow(config_entries.OptionsFlow):
                 _LOGGER.exception("Failed to fetch scene catalog for SKU %s", sku)
                 errors["base"] = "fetch_failed"
             else:
+                new_data = dict(self.config_entry.data)
+                new_data[CONF_SKU] = sku
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry,
+                    data=new_data,
+                )
                 await self.hass.config_entries.async_reload(self.config_entry.entry_id)
                 return self.async_create_entry(title="", data={})
 
         return self.async_show_form(
             step_id="scene_catalog",
             data_schema=vol.Schema({
-                vol.Required(CONF_SKU): str,
+                vol.Required(CONF_SKU, default=current_sku): str,
             }),
             errors=errors,
         )
