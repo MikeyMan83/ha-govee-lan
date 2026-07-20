@@ -14,6 +14,7 @@ This is a fork of [Brian Miller's govee-lan-direct](https://gitlab.phospher.com/
 - A confirmed, empirically-tested color temperature range rather than the
   device's advertised (but not necessarily accurate) spec range
 - HACS Support
+- A packaging cleanup for Home Assistant/HACS so the integration icon is included in the current release build
 
 ## Features
 
@@ -32,6 +33,12 @@ This is a fork of [Brian Miller's govee-lan-direct](https://gitlab.phospher.com/
   (Settings for the device -> LAN Control -> on)
 - Home Assistant and the Govee device able to reach each other over UDP on
   ports **4001-4003** (see below if they're on different VLANs/subnets)
+
+## Current release status
+
+- Current release: 2.2.7
+- Includes updated icon assets in the integration package and repository root so Home Assistant/HACS should surface the integration icon correctly after installation and a reload/restart.
+- Includes the scene-catalog, UDP reliability, and color-temperature range improvements described below.
 
 ## Installation
 

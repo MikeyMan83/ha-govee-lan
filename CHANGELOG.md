@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.7 - 2026-07-20
+
+- Bumped the manifest version to 2.2.7 for the latest HACS/Home Assistant release.
+- Added/confirmed icon assets for the integration package and repository root so the integration can surface its icon correctly once installed and reloaded.
+- Updated packaging notes and release documentation to reflect the current status of the integration.
+
 ## 2.2.5 - 2026-07-20
 
 - Added release notes and clarified HACS/manual install guidance.
