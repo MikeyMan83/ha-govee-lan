@@ -36,10 +36,10 @@ This is a fork of [Brian Miller's govee-lan-direct](https://gitlab.phospher.com/
 
 ## Current release status
 
-- Current release: 2.3.2
-- Includes local brand images in `custom_components/govee_lan/brand/` so Home Assistant 2026.3+ can serve the integration icon directly from the installed custom component.
-- Includes the scene-catalog, UDP reliability, and color-temperature range improvements described below.
-- Scene-catalog fetch is available directly in the integration options form with SKU prefill and a `Fetch scene catalog now` toggle.
+- Current release: 2.3.5
+- Scene-catalog fetch is available directly in the integration options form — enter your SKU, enable `Fetch scene catalog now`, and save.
+- Local brand images in `custom_components/govee_lan/brand/` for Home Assistant 2026.3+ icon support.
+- Includes UDP reliability, color-temperature range, and options-flow fixes.
 
 If the integration still shows "icon not available" after upgrading, restart Home Assistant and hard-refresh the browser once so the frontend drops any cached placeholder image.
 
@@ -146,26 +146,20 @@ H6076, H706A, H702B, H7094.
 
 ## Color temperature range
 
-`MIN_COLOR_TEMP_KELVIN` / `MAX_COLOR_TEMP_KELVIN` in `const.py` are set to
-**2700-6500K**, matching the range Govee's own app exposes -- not the wider
-2000-9000K some of these devices advertise on their spec sheet.
+The default range is **2700-6500K**, matching the range Govee's own app exposes.
+This is a configurable default, not a hard limit — you can adjust it per device
+under `Settings -> Devices & Services -> Govee LAN Direct -> Configure`.
 
-This was a deliberate choice, not an oversight: on RGBICW hardware (RGB
-emitters blended with a single warm-white LED, no separate cool-white
-channel), color temperature outside the app's range was confirmed, via
-direct device polling, to produce genuinely wrong output -- a hue shift
-toward magenta/purple, not just a duller or less accurate color. The
-device's onboard color-mixing math appears to only be valid within the
-range Govee calibrated and tested in their own app; sending values outside
-it isn't "pushing the hardware a bit further," it's asking the firmware to
-extrapolate somewhere it was never validated.
+The default was chosen deliberately: on RGBICW hardware (RGB emitters blended
+with a single warm-white LED, no separate cool-white channel), values outside
+the app's range were confirmed, via direct device polling, to produce genuinely
+wrong output -- a hue shift toward magenta/purple rather than a duller color.
+The firmware's color-mixing math appears only valid within the calibrated range.
 
-**If you're using a different SKU**, don't assume this range is universal
--- verify it for your own device before trusting it, the same way we did
-here: set a color temperature via Home Assistant, then poll `devStatus`
-directly (see `scripts/` or just watch Developer Tools -> States after the
-next poll cycle) to see what the device itself reports, and compare against
-what it visually looks like.
+**If you're using a different SKU**, verify the right range for your device
+before changing it: set a color temperature via Home Assistant, then check
+`devStatus` directly (Developer Tools -> States after the next poll cycle) to
+see what the device reports versus what it looks like visually.
 
 ## Not currently supported
 
