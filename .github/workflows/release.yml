@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: python -m pip install --quiet pytest && python -m pytest
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog section
+        run: |
+          python3 - <<'EOF'
+          import re
+
+          version = "${{ steps.version.outputs.version }}"
+          text = open("CHANGELOG.md").read()
+
+          pattern = rf"(?m)^## {re.escape(version)}[^\n]*\n(.*?)(?=^## |\Z)"
+          m = re.search(pattern, text, re.DOTALL)
+          notes = m.group(1).strip() if m else f"Release {version}"
+
+          header = (
+              "Forked from [Brian Miller's govee-lan-direct]"
+              "(https://gitlab.phospher.com/brianmiller/govee-lan-direct) "
+              "(MIT), extended with scene support, VLAN reliability fixes, and HACS packaging.\n\n"
+          )
+
+          open("release_notes.md", "w").write(header + notes)
+          EOF
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Govee LAN Direct ${{ steps.version.outputs.version }}"
+          body_path: release_notes.md
